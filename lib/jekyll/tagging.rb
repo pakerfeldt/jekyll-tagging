@@ -37,8 +37,8 @@ module Jekyll
           name = yield data if block_given?
 
           site.pages << TagPage.new(
-            site, site.source, site.config["tag_#{type}_dir"],
-            "#{name || tag}#{site.layouts[data['layout']].ext}", data
+            site, site.source, site.config["tag_#{type}_dir"]+"/#{name || tag}",
+            "#{name || tag}", "index#{site.layouts[data['layout']].ext}", data
           )
         end
       }
@@ -75,13 +75,11 @@ module Jekyll
 
   class TagPage < Page
 
-    def initialize(site, base, dir, name, data = {})
+    def initialize(site, base, dir, name, file, data = {})
       self.content = data.delete('content') || ''
       self.data    = data
-
-      super(site, base, dir[-1, 1] == '/' ? dir : '/' + dir, name)
-
-      data['tag'] ||= basename
+      super(site, base, dir[-1, 1] == '/' ? dir : '/' + dir, file)
+      data['tag'] ||= name
     end
 
     def read_yaml(*)
@@ -104,7 +102,7 @@ module Jekyll
     end
 
     def tag_url(tag, type = :page, site = Tagger.site)
-      url = File.join('', site.config["tag_#{type}_dir"], ERB::Util.u(tag))
+      url = File.join('', site.config["tag_#{type}_dir"], ERB::Util.u(tag), "/index")
       site.permalink_style == :pretty ? url : url << '.html'
     end
 
